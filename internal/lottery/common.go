@@ -185,6 +185,57 @@ func ParseNumParts(input string) ([]int, []int, error) {
 		return nil
 	}
 
+	check := func() error {
+		if len(dan) == 0 {
+			return fmt.Errorf("号码区解析失败。输入: %s", input)
+		}
+
+		if len(tuo) == 0 {
+			tuo, dan = dan, tuo
+		}
+
+		dupDan := getDupNums(dan)
+		dupTuo := getDupNums(tuo)
+		dupMsg := ""
+
+		if len(dupDan) > 0 {
+			dupMsg += fmt.Sprintf("胆码区重复: %v。", dupDan)
+		}
+
+		if len(dupTuo) > 0 {
+			dupMsg += fmt.Sprintf("拖码区重复: %v。", dupTuo)
+		}
+
+		if len(dupMsg) > 0 {
+			dupMsg = "号码区解析失败。" + dupMsg
+
+			return errors.New(dupMsg)
+		}
+
+		var (
+			danMap = make(map[int]bool)
+			cross  []int
+		)
+
+		for _, num := range dan {
+			danMap[num] = true
+		}
+
+		for _, num := range tuo {
+			if danMap[num] {
+				cross = append(cross, num)
+			}
+		}
+
+		if len(cross) > 0 {
+			sort.Ints(cross)
+
+			return fmt.Errorf("号码区解析失败。拖码区冲突: %v。", cross)
+		}
+
+		return nil
+	}
+
 	for _, char := range input {
 		if '0' <= char && char <= '9' {
 			// 追加数字字符
@@ -224,30 +275,8 @@ func ParseNumParts(input string) ([]int, []int, error) {
 		return nil, nil, err
 	}
 
-	if len(dan) == 0 {
-		return nil, nil, fmt.Errorf("号码区解析失败。输入: %s", input)
-	}
-
-	if len(tuo) == 0 {
-		tuo, dan = dan, tuo
-	}
-
-	dupDan := getDupNums(dan)
-	dupTuo := getDupNums(tuo)
-	dupMsg := ""
-
-	if len(dupDan) > 0 {
-		dupMsg += fmt.Sprintf("胆码区重复: %v。", dupDan)
-	}
-
-	if len(dupTuo) > 0 {
-		dupMsg += fmt.Sprintf("拖码区重复: %v。", dupTuo)
-	}
-
-	if len(dupMsg) > 0 {
-		dupMsg = "号码区解析失败。" + dupMsg
-
-		return nil, nil, errors.New(dupMsg)
+	if err := check(); err != nil {
+		return nil, nil, err
 	}
 
 	return dan, tuo, nil
