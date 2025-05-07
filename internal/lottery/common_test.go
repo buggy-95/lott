@@ -1,6 +1,7 @@
 package lottery
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -107,6 +108,38 @@ func TestParseComplexLotteryParts(t *testing.T) {
 				} else if !strings.HasPrefix(err.Error(), tt.errorMsg) {
 					t.Errorf("%s: 错误信息错误。预期: %s, 实际: %s", tt.name, tt.errorMsg, err)
 				}
+			}
+		})
+	}
+}
+
+func TestGenPermutation(t *testing.T) {
+	tests := []struct {
+		inputNums []int
+		inputN    int
+		result    [][]int
+	}{
+		{[]int{}, 0, [][]int{{}}},
+		{[]int{}, 1, [][]int{{}}},
+		{[]int{1}, 0, [][]int{{}}},
+		{[]int{1}, 1, [][]int{{1}}},
+		{[]int{1}, 2, [][]int{{1}}},
+		{[]int{1, 2}, 0, [][]int{{}}},
+		{[]int{1, 2}, 1, [][]int{{1}, {2}}},
+		{[]int{1, 2}, 2, [][]int{{1, 2}}},
+		{[]int{1, 2}, 3, [][]int{{1, 2}}},
+		{[]int{1, 2, 3}, 1, [][]int{{1}, {2}, {3}}},
+		{[]int{1, 2, 3}, 2, [][]int{{1, 2}, {1, 3}, {2, 3}}},
+		{[]int{1, 2, 3}, 3, [][]int{{1, 2, 3}}},
+		{[]int{1, 2, 3}, 4, [][]int{{1, 2, 3}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%v %d", tt.inputNums, tt.inputN), func(t *testing.T) {
+			result := genPermutation(tt.inputNums, tt.inputN)
+
+			if !reflect.DeepEqual(tt.result, result) {
+				t.Errorf("%v %d 失败。预期: %v, 实际: %v", tt.inputNums, tt.inputN, tt.result, result)
 			}
 		})
 	}

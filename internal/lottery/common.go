@@ -368,3 +368,34 @@ func ParseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 
 	return complexLotteryParts, nil
 }
+
+func genPermutation(nums []int, n int) [][]int {
+	var (
+		result    [][]int
+		backtrack func(start int, current []int)
+	)
+
+	if n < 0 || n >= len(nums) {
+		return [][]int{nums}
+	}
+
+	backtrack = func(start int, current []int) {
+		if len(current) == n {
+			temp := make([]int, n)
+			copy(temp, current)
+			result = append(result, temp)
+
+			return
+		}
+
+		for i := start; i < len(nums); i++ {
+			current = append(current, nums[i])
+			backtrack(i+1, current)
+			current = current[:len(current)-1]
+		}
+	}
+
+	backtrack(0, []int{})
+
+	return result
+}
