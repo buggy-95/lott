@@ -1,13 +1,5 @@
 package lottery
 
-type Lottery struct {
-	Type  string // 彩票类型（DLT: 大乐透，SSQ: 双色球）
-	Index int    // 开奖期号
-	Scale int    // 倍投倍数
-	Red   []int  // 红球
-	Blue  []int  //蓝球
-}
-
 type ResultNum struct {
 	Type  string // 号码类型 (FrontDan: 前区胆码, FrontTuo: 前区拖码, BackDan: 后区胆码, BackTuo: 后区拖码)
 	Num   int    // 彩票号码

@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func getDupNums(nums []int) []int {
+func GetDupNums(nums []int) []int {
 	var dupSlice []int
 
 	dupMap := make(map[int]bool)
@@ -23,6 +23,26 @@ func getDupNums(nums []int) []int {
 	sort.Ints(dupSlice)
 
 	return dupSlice
+}
+
+func GetCrossNums(source, target []int) []int {
+	var result []int
+
+	numMap := make(map[int]bool, len(source))
+
+	for _, num := range source {
+		numMap[num] = true
+	}
+
+	for _, num := range target {
+		if numMap[num] {
+			result = append(result, num)
+		}
+	}
+
+	sort.Ints(result)
+
+	return result
 }
 
 // 将号码区解析为前区和后区
@@ -84,15 +104,13 @@ func parseNumParts(input string) ([]int, []int, error) {
 			tuo, dan = dan, tuo
 		}
 
-		dupDan := getDupNums(dan)
-		dupTuo := getDupNums(tuo)
 		dupMsg := ""
 
-		if len(dupDan) > 0 {
+		if dupDan := GetDupNums(dan); len(dupDan) > 0 {
 			dupMsg += fmt.Sprintf("胆码区重复: %v。", dupDan)
 		}
 
-		if len(dupTuo) > 0 {
+		if dupTuo := GetDupNums(tuo); len(dupTuo) > 0 {
 			dupMsg += fmt.Sprintf("拖码区重复: %v。", dupTuo)
 		}
 
@@ -102,24 +120,7 @@ func parseNumParts(input string) ([]int, []int, error) {
 			return errors.New(dupMsg)
 		}
 
-		var (
-			danMap = make(map[int]bool)
-			cross  []int
-		)
-
-		for _, num := range dan {
-			danMap[num] = true
-		}
-
-		for _, num := range tuo {
-			if danMap[num] {
-				cross = append(cross, num)
-			}
-		}
-
-		if len(cross) > 0 {
-			sort.Ints(cross)
-
+		if cross := GetCrossNums(dan, tuo); len(cross) > 0 {
 			return fmt.Errorf("号码区解析失败。拖码区冲突: %v。", cross)
 		}
 

@@ -144,3 +144,51 @@ func TestGenPermutation(t *testing.T) {
 		})
 	}
 }
+
+func TestGetDupNums(t *testing.T) {
+	tests := []struct {
+		input  []int
+		result []int
+	}{
+		{[]int{}, nil},
+		{[]int{1}, nil},
+		{[]int{1, 2}, nil},
+		{[]int{1, 2, 2}, []int{2}},
+		{[]int{1, 2, 2, 1}, []int{1, 2}},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%v", tt.input), func(t *testing.T) {
+			result := GetDupNums(tt.input)
+
+			if !reflect.DeepEqual(tt.result, result) {
+				t.Errorf("%v: 期望: %v, 实际: %v", tt.input, tt.result, result)
+			}
+		})
+	}
+}
+
+func TestGetCrossNums(t *testing.T) {
+	tests := []struct {
+		inputSource []int
+		inputTarget []int
+		result      []int
+	}{
+		{[]int{}, []int{}, nil},
+		{[]int{1}, []int{}, nil},
+		{[]int{}, []int{1}, nil},
+		{[]int{1}, []int{2}, nil},
+		{[]int{1, 2}, []int{2, 3}, []int{2}},
+		{[]int{1, 2, 3}, []int{4, 3, 2}, []int{2, 3}},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%v%v", tt.inputSource, tt.inputTarget), func(t *testing.T) {
+			result := GetCrossNums(tt.inputSource, tt.inputTarget)
+
+			if !reflect.DeepEqual(tt.result, result) {
+				t.Errorf("source: %v, target: %v, 期望: %v, 实际: %v", tt.inputSource, tt.inputTarget, tt.result, result)
+			}
+		})
+	}
+}
