@@ -426,6 +426,9 @@ func genSingleLotteryList(parts ComplexLotteryParts) []SingleLottery {
 				Back:  append(backDan, back...),
 			}
 
+			sort.Ints(singleLottery.Front)
+			sort.Ints(singleLottery.Back)
+
 			result = append(result, singleLottery)
 		}
 	}
