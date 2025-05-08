@@ -190,3 +190,113 @@ func TestGetCrossNums(t *testing.T) {
 		})
 	}
 }
+
+func TestGenSingleLotteryList(t *testing.T) {
+	baseInfo := LotteryBaseInfo{"DLT", 0, 1}
+
+	tests := []struct {
+		name   string
+		input  string
+		result []SingleLottery
+	}{
+		{"单式", "01,02,03,04,05-01,02", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+		}},
+		{"前单后复", "01,02,03,04,05-01,02,03", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{2, 3}},
+		}},
+		{"前单后拖", "01,02,03,04,05-01~02,03,04", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 4}},
+		}},
+		{"前复后单", "01,02,03,04,05,06-01,02", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 4, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 3, 4, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{2, 3, 4, 5, 6}, []int{1, 2}},
+		}},
+		{"复式", "01,02,03,04,05,06-01,02,03", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{2, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{2, 3}},
+			{baseInfo, []int{1, 2, 3, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 5, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 5, 6}, []int{2, 3}},
+			{baseInfo, []int{1, 2, 4, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 4, 5, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 4, 5, 6}, []int{2, 3}},
+			{baseInfo, []int{1, 3, 4, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 3, 4, 5, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 3, 4, 5, 6}, []int{2, 3}},
+			{baseInfo, []int{2, 3, 4, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{2, 3, 4, 5, 6}, []int{1, 3}},
+			{baseInfo, []int{2, 3, 4, 5, 6}, []int{2, 3}},
+		}},
+		{"前复后拖", "01,02,03,04,05,06-01~02,03,04", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 4}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 4}},
+			{baseInfo, []int{1, 2, 3, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 5, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 5, 6}, []int{1, 4}},
+			{baseInfo, []int{1, 2, 4, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 4, 5, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 4, 5, 6}, []int{1, 4}},
+			{baseInfo, []int{1, 3, 4, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 3, 4, 5, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 3, 4, 5, 6}, []int{1, 4}},
+			{baseInfo, []int{2, 3, 4, 5, 6}, []int{1, 2}},
+			{baseInfo, []int{2, 3, 4, 5, 6}, []int{1, 3}},
+			{baseInfo, []int{2, 3, 4, 5, 6}, []int{1, 4}},
+		}},
+		{"前拖后单", "01,02,03,04~05,06-01,02", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 2}},
+		}},
+		{"前拖后复", "01,02,03,04~05,06-01,02,03", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{2, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{2, 3}},
+		}},
+		{"前拖后拖", "01,02,03,04~05,06-01~02,03,04", []SingleLottery{
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 5}, []int{1, 4}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 2}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 3}},
+			{baseInfo, []int{1, 2, 3, 4, 6}, []int{1, 4}},
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			complexLottery, err := ParseComplexLotteryParts("DLT:" + tt.input)
+
+			if err != nil {
+				t.Errorf("%s: 解析失败。错误信息: %s, 输入: %s", tt.name, err, tt.input)
+
+				return
+			}
+
+			result := genSingleLotteryList(complexLottery)
+
+			if !reflect.DeepEqual(tt.result, result) {
+				t.Errorf("%s。 期望: %v, 实际: %v, 输入: %+v", tt.name, tt.result, result, tt.input)
+			}
+		})
+	}
+}

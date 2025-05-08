@@ -400,3 +400,35 @@ func genPermutation(nums []int, n int) [][]int {
 
 	return result
 }
+
+func genSingleLotteryList(parts ComplexLotteryParts) []SingleLottery {
+	var (
+		result []SingleLottery
+	)
+
+	frontDan := parts.FrontDan
+	frontTuo := parts.FrontTuo
+	backDan := parts.BackDan
+	backTuo := parts.BackTuo
+
+	frontList := genPermutation(frontTuo, 5-len(frontDan))
+	backList := genPermutation(backTuo, 2-len(backDan))
+
+	for _, front := range frontList {
+		for _, back := range backList {
+			singleLottery := SingleLottery{
+				LotteryBaseInfo: LotteryBaseInfo{
+					Type:  parts.Type,
+					Index: parts.Index,
+					Scale: parts.Scale,
+				},
+				Front: append(frontDan, front...),
+				Back:  append(backDan, back...),
+			}
+
+			result = append(result, singleLottery)
+		}
+	}
+
+	return result
+}
