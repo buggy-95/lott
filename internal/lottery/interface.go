@@ -1,9 +1,13 @@
 package lottery
 
+type BingoNum struct {
+	Num   int  // 彩票号码
+	Bingo bool // 是否投中
+}
+
 type ResultNum struct {
-	Type  string // 号码类型 (FrontDan: 前区胆码, FrontTuo: 前区拖码, BackDan: 后区胆码, BackTuo: 后区拖码)
-	Num   int    // 彩票号码
-	Bingo bool   // 是否投中
+	BingoNum
+	Type string // 号码类型 (FrontDan: 前区胆码, FrontTuo: 前区拖码, BackDan: 后区胆码, BackTuo: 后区拖码)
 }
 
 type LotteryResult struct {
