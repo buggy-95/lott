@@ -458,3 +458,90 @@ func getMatchResult(source []int, target []int) ([]BingoNum, int) {
 
 	return result, matched
 }
+
+func getSingleLotteryResult(source SingleLottery, target SingleLottery) SingleLotteryResult {
+	var (
+		result SingleLotteryResult
+		nums   []ResultNum
+		level  int
+	)
+
+	frontNums, frontMatched := getMatchResult(source.Front, target.Front)
+	backNums, backMatched := getMatchResult(source.Back, target.Back)
+
+	for _, num := range frontNums {
+		nums = append(nums, ResultNum{Type: "FrontTuo", BingoNum: num})
+	}
+
+	for _, num := range backNums {
+		nums = append(nums, ResultNum{Type: "BackTuo", BingoNum: num})
+	}
+
+	levelPriceMap := map[int]int{
+		1: 10000000,
+		2: 200000,
+		3: 10000,
+		4: 3000,
+		5: 300,
+		6: 200,
+		7: 100,
+		8: 15,
+		9: 5,
+	}
+
+	switch frontMatched {
+	case 5:
+		switch backMatched {
+		case 2:
+			level = 1
+		case 1:
+			level = 2
+		case 0:
+			level = 3
+		}
+	case 4:
+		switch backMatched {
+		case 2:
+			level = 4
+		case 1:
+			level = 5
+		case 0:
+			level = 7
+		}
+	case 3:
+		switch backMatched {
+		case 2:
+			level = 6
+		case 1:
+			level = 8
+		case 0:
+			level = 9
+		}
+	case 2:
+		switch backMatched {
+		case 2:
+			level = 8
+		case 1:
+			level = 9
+		}
+	case 1:
+		switch backMatched {
+		case 2:
+			level = 9
+		}
+	case 0:
+		switch backMatched {
+		case 2:
+			level = 9
+		}
+	}
+
+	result.LotteryBaseInfo = source.LotteryBaseInfo
+	result.FrontMatched = frontMatched
+	result.BackMatched = backMatched
+	result.Numbers = nums
+	result.Level = level
+	result.Price = levelPriceMap[level] * source.Scale
+
+	return result
+}

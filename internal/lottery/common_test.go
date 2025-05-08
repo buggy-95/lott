@@ -327,3 +327,193 @@ func TestGetMatchResult(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSingleLotteryResult(t *testing.T) {
+	baseInfo := LotteryBaseInfo{"DLT", 0, 1}
+
+	tests := []struct {
+		name   string
+		source string
+		target string
+		result SingleLotteryResult
+	}{
+		{"一等奖", "01,02,03,04,05-01,02", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 5, 2, 1, 10000000, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{4, true}, "FrontTuo"},
+			{BingoNum{5, true}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{2, true}, "BackTuo"},
+		}}},
+		{"二等奖", "01,02,03,04,05-01,03", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 5, 1, 2, 200000, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{4, true}, "FrontTuo"},
+			{BingoNum{5, true}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+		}}},
+		{"三等奖", "01,02,03,04,05-03,04", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 5, 0, 3, 10000, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{4, true}, "FrontTuo"},
+			{BingoNum{5, true}, "FrontTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+			{BingoNum{4, false}, "BackTuo"},
+		}}},
+		{"四等奖", "01,02,03,04,06-01,02", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 4, 2, 4, 3000, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{4, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{2, true}, "BackTuo"},
+		}}},
+		{"五等奖", "01,02,03,04,06-01,03", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 4, 1, 5, 300, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{4, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+		}}},
+		{"六等奖", "01,02,03,06,07-01,02", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 3, 2, 6, 200, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{2, true}, "BackTuo"},
+		}}},
+		{"七等奖", "01,02,03,04,06-03,04", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 4, 0, 7, 100, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{4, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+			{BingoNum{4, false}, "BackTuo"},
+		}}},
+		{"八等奖A", "01,02,03,06,07-01,03", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 3, 1, 8, 15, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+		}}},
+		{"八等奖B", "01,02,06,07,08-01,02", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 2, 2, 8, 15, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{2, true}, "BackTuo"},
+		}}},
+		{"九等奖A", "01,02,03,06,07-03,04", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 3, 0, 9, 5, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{3, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+			{BingoNum{4, false}, "BackTuo"},
+		}}},
+		{"九等奖B", "01,06,07,08,09-01,02", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 1, 2, 9, 5, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{9, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{2, true}, "BackTuo"},
+		}}},
+		{"九等奖C", "01,02,06,07,08-01,03", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 2, 1, 9, 5, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+		}}},
+		{"九等奖D", "06,07,08,09,10-01,02", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 0, 2, 9, 5, []ResultNum{
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{9, false}, "FrontTuo"},
+			{BingoNum{10, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{2, true}, "BackTuo"},
+		}}},
+		{"无奖A", "06,07,08,09,10-03,04", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 0, 0, 0, 0, []ResultNum{
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{9, false}, "FrontTuo"},
+			{BingoNum{10, false}, "FrontTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+			{BingoNum{4, false}, "BackTuo"},
+		}}},
+		{"无奖B", "01,06,07,08,09-03,04", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 1, 0, 0, 0, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{9, false}, "FrontTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+			{BingoNum{4, false}, "BackTuo"},
+		}}},
+		{"无奖C", "06,07,08,09,10-01,03", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 0, 1, 0, 0, []ResultNum{
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{9, false}, "FrontTuo"},
+			{BingoNum{10, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+		}}},
+		{"无奖D", "01,06,07,08,09-01,03", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 1, 1, 0, 0, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{9, false}, "FrontTuo"},
+			{BingoNum{1, true}, "BackTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+		}}},
+		{"无奖E", "01,02,06,07,08-03,04", "01,02,03,04,05-01,02", SingleLotteryResult{baseInfo, 2, 0, 0, 0, []ResultNum{
+			{BingoNum{1, true}, "FrontTuo"},
+			{BingoNum{2, true}, "FrontTuo"},
+			{BingoNum{6, false}, "FrontTuo"},
+			{BingoNum{7, false}, "FrontTuo"},
+			{BingoNum{8, false}, "FrontTuo"},
+			{BingoNum{3, false}, "BackTuo"},
+			{BingoNum{4, false}, "BackTuo"},
+		}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			complexSource, _ := ParseComplexLotteryParts("DLT:" + tt.source)
+			sourceList := genSingleLotteryList(complexSource)
+			source := sourceList[0]
+			complexTarget, _ := ParseComplexLotteryParts("DLT:" + tt.target)
+			targetList := genSingleLotteryList(complexTarget)
+			target := targetList[0]
+			result := getSingleLotteryResult(source, target)
+
+			if !reflect.DeepEqual(tt.result, result) {
+				t.Errorf("期望: %v, 实际: %v, source: %+v, target: %+v", tt.result, result, tt.source, tt.target)
+			}
+		})
+	}
+}

@@ -46,11 +46,11 @@ type ComplexLottery struct {
 
 type SingleLotteryResult struct {
 	LotteryBaseInfo
-	Numbers      []ResultNum
 	FrontMatched int
 	BackMatched  int
 	Level        int
 	Price        int
+	Numbers      []ResultNum
 }
 
 type ComplexLotteryResult struct {
