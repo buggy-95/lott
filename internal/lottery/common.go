@@ -273,82 +273,66 @@ func ParseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 	}
 
 	dealChar := func(char rune) error {
+		isDigit := func(char rune) bool {
+			return '0' <= char && char <= '9'
+		}
+
+		isUpperAlpha := func(char rune) bool {
+			return 'A' <= char && char <= 'Z'
+		}
+
+		appendToken := func(char rune) {
+			token += string(char)
+		}
+
+		handleTransition := func(expectedTokenType string) error {
+			if err := dealToken(nextTokenType); err != nil {
+				return err
+			}
+
+			return switchNextTokenType(expectedTokenType)
+		}
+
 		switch nextTokenType {
 		case "type":
 			if char == ':' {
-				if err := dealToken("type"); err != nil {
-					return err
-				}
-
-				if err := switchNextTokenType("front"); err != nil {
-					return err
-				}
-			} else if len(token) < 5 && ('A' <= char && char <= 'Z') {
-				token += string(char)
+				return handleTransition("front")
+			} else if len(token) < 5 && isUpperAlpha(char) {
+				appendToken(char)
 			} else {
 				return fmt.Errorf("彩票类型解析失败。输入: %s", input)
 			}
 		case "front":
 			if char == '-' {
-				if err := dealToken("front"); err != nil {
-					return err
-				}
-
-				if err := switchNextTokenType("back"); err != nil {
-					return err
-				}
-			} else if char == ',' || char == '~' || ('0' <= char && char <= '9') {
-				token += string(char)
+				return handleTransition("back")
+			} else if char == ',' || char == '~' || isDigit(char) {
+				appendToken(char)
 			} else {
 				return fmt.Errorf("前区号码解析失败。当前字符: 【%c】。输入: %s", char, input)
 			}
 		case "back":
 			if char == 'x' {
-				if err := dealToken("back"); err != nil {
-					return err
-				}
-
-				if err := switchNextTokenType("scale"); err != nil {
-					return err
-				}
+				return handleTransition("scale")
 			} else if char == ':' {
-				if err := dealToken("back"); err != nil {
-					return err
-				}
-
-				if err := switchNextTokenType("index"); err != nil {
-					return err
-				}
-			} else if char == ',' || char == '~' || ('0' <= char && char <= '9') {
-				token += string(char)
+				return handleTransition("index")
+			} else if char == ',' || char == '~' || isDigit(char) {
+				appendToken(char)
 			} else {
 				return fmt.Errorf("后区号码解析失败。输入: %s", input)
 			}
 		case "scale":
 			if char == ':' {
-				if err := dealToken("scale"); err != nil {
-					return err
-				}
-
-				if err := switchNextTokenType("index"); err != nil {
-					return err
-				}
-			} else if '0' <= char && char <= '9' {
-				token += string(char)
+				return handleTransition("index")
+			} else if isDigit(char) {
+				appendToken(char)
 			} else {
 				return fmt.Errorf("倍投数解析失败。当前字符: 【%c】。输入: %s", char, input)
 			}
 		case "index":
 			if char == 'x' {
-				if err := dealToken("index"); err != nil {
-					return err
-				}
-
-				if err := switchNextTokenType("scale"); err != nil {
-					return err
-				}
-			} else if '0' <= char && char <= '9' {
-				token += string(char)
+				return handleTransition("scale")
+			} else if isDigit(char) {
+				appendToken(char)
 			} else {
 				return fmt.Errorf("期数解析失败。当前字符: 【%c】。输入: %s", char, input)
 			}
