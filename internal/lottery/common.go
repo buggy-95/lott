@@ -420,7 +420,7 @@ func genSingleLotteryList(parts ComplexLotteryParts) []SingleLottery {
 	return result
 }
 
-func getMatchResult(source []int, target []int) ([]BingoNum, int) {
+func getMatchNums(source []int, target []int) ([]BingoNum, int) {
 	var (
 		result  []BingoNum
 		matched int
@@ -450,8 +450,8 @@ func getSingleLotteryResult(source SingleLottery, target SingleLottery) SingleLo
 		level  int
 	)
 
-	frontNums, frontMatched := getMatchResult(source.Front, target.Front)
-	backNums, backMatched := getMatchResult(source.Back, target.Back)
+	frontNums, frontMatched := getMatchNums(source.Front, target.Front)
+	backNums, backMatched := getMatchNums(source.Back, target.Back)
 
 	for _, num := range frontNums {
 		nums = append(nums, ResultNum{Type: "FrontTuo", BingoNum: num})
@@ -528,4 +528,58 @@ func getSingleLotteryResult(source SingleLottery, target SingleLottery) SingleLo
 	result.Price = levelPriceMap[level] * source.Scale
 
 	return result
+}
+
+// untested
+func getComplexLottery(input string) (ComplexLottery, error) {
+	var (
+		result ComplexLottery
+	)
+
+	complexParts, err := ParseComplexLotteryParts(input)
+
+	if err != nil {
+		return result, err
+	} else {
+		return ComplexLottery{complexParts, genSingleLotteryList(complexParts)}, nil
+	}
+}
+
+// untested
+func GetComplexResult(source, target string) (ComplexLotteryResult, error) {
+	var (
+		result ComplexLotteryResult
+		list   []SingleLottery
+	)
+
+	complexTarget, complexTargetErr := getComplexLottery(target)
+
+	if complexTargetErr != nil {
+		return result, complexTargetErr
+	}
+
+	if !(len(complexTarget.List) == 1 &&
+		len(complexTarget.FrontDan) == 0 &&
+		len(complexTarget.FrontTuo) == 5 &&
+		len(complexTarget.BackDan) == 0 &&
+		len(complexTarget.BackTuo) == 2) {
+		return result, fmt.Errorf("开奖号码应该是单式，输入: %s", target)
+	}
+
+	singleTarget := complexTarget.List[0]
+	complexSource, complexSourceErr := ParseComplexLotteryParts(source)
+
+	if complexSourceErr != nil {
+		return result, complexSourceErr
+	}
+
+	result.LotteryBaseInfo = complexSource.LotteryBaseInfo
+	list = genSingleLotteryList(complexSource)
+
+	for _, singleSource := range list {
+		singleResult := getSingleLotteryResult(singleSource, singleTarget)
+		result.List = append(result.List, singleResult)
+	}
+
+	return result, nil
 }

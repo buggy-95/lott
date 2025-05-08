@@ -319,7 +319,7 @@ func TestGetMatchResult(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, matched := getMatchResult(tt.source, tt.target)
+			result, matched := getMatchNums(tt.source, tt.target)
 
 			if !reflect.DeepEqual(tt.result, result) && matched != tt.matched {
 				t.Errorf("%s: 期望: %v %d, 实际: %v %d", tt.name, tt.result, tt.matched, result, matched)
