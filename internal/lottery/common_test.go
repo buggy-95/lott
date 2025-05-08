@@ -303,25 +303,26 @@ func TestGenSingleLotteryList(t *testing.T) {
 
 func TestGetMatchResult(t *testing.T) {
 	tests := []struct {
-		name   string
-		source []int
-		target []int
-		result []BingoNum
+		name    string
+		source  []int
+		target  []int
+		result  []BingoNum
+		matched int
 	}{
-		{"source和target都为空", []int{}, []int{}, nil},
-		{"source为空", []int{}, []int{1, 2}, nil},
-		{"target为空", []int{1, 2}, []int{}, []BingoNum{{1, false}, {2, false}}},
-		{"source和target一样", []int{1, 2}, []int{2, 1}, []BingoNum{{1, true}, {2, true}}},
-		{"source和target有交集", []int{1, 2}, []int{2, 3}, []BingoNum{{1, false}, {2, true}}},
-		{"source和target没有交集", []int{1, 2}, []int{3, 4}, []BingoNum{{1, false}, {2, false}}},
+		{"source和target都为空", []int{}, []int{}, nil, 0},
+		{"source为空", []int{}, []int{1, 2}, nil, 0},
+		{"target为空", []int{1, 2}, []int{}, []BingoNum{{1, false}, {2, false}}, 0},
+		{"source和target一样", []int{1, 2}, []int{2, 1}, []BingoNum{{1, true}, {2, true}}, 2},
+		{"source和target有交集", []int{1, 2}, []int{2, 3}, []BingoNum{{1, false}, {2, true}}, 1},
+		{"source和target没有交集", []int{1, 2}, []int{3, 4}, []BingoNum{{1, false}, {2, false}}, 0},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := getMatchResult(tt.source, tt.target)
+			result, matched := getMatchResult(tt.source, tt.target)
 
-			if !reflect.DeepEqual(tt.result, result) {
-				t.Errorf("%s: 期望: %v, 实际: %v", tt.name, tt.result, result)
+			if !reflect.DeepEqual(tt.result, result) && matched != tt.matched {
+				t.Errorf("%s: 期望: %v %d, 实际: %v %d", tt.name, tt.result, tt.matched, result, matched)
 			}
 		})
 	}

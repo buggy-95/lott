@@ -436,8 +436,11 @@ func genSingleLotteryList(parts ComplexLotteryParts) []SingleLottery {
 	return result
 }
 
-func getMatchResult(source []int, target []int) []BingoNum {
-	var result []BingoNum
+func getMatchResult(source []int, target []int) ([]BingoNum, int) {
+	var (
+		result  []BingoNum
+		matched int
+	)
 
 	numMap := make(map[int]bool, len(target))
 
@@ -447,7 +450,11 @@ func getMatchResult(source []int, target []int) []BingoNum {
 
 	for _, num := range source {
 		result = append(result, BingoNum{Num: num, Bingo: numMap[num]})
+
+		if numMap[num] {
+			matched++
+		}
 	}
 
-	return result
+	return result, matched
 }
