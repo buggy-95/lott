@@ -625,43 +625,41 @@ func GetComplexLottery(input string) (ComplexLottery, error) {
 	}
 }
 
-// formatSingleLottery
+// format
 //
 // @Description 格式化单式彩票的号码区，格式为: 01,02,03,04-05,06
 //
-// @Param lott SingleLottery 单式彩票结构体
-//
-// @Param onlyNumber bool 是否只返回号码区
+// @Param showExtra bool 是否展示除了号码区以外的额外信息，例如倍投倍数和期号
 //
 // @Return string 格式化后的号码区字符串
-func formatSingleLottery(lott SingleLottery, onlyNumber bool) string {
+func (s *SingleLottery) format(showExtra bool) string {
 	var (
 		front string
 		back  string
 		str   string
 	)
 
-	for _, num := range lott.Front {
+	for _, num := range s.Front {
 		front += fmt.Sprintf(",%02d", num)
 	}
 
 	str += front[1:]
 
-	for _, num := range lott.Back {
+	for _, num := range s.Back {
 		back += fmt.Sprintf(",%02d", num)
 	}
 
 	str += "-" + back[1:]
 
-	if onlyNumber {
+	if !showExtra {
 		return str
 	}
 
-	if scale := lott.LotteryBaseInfo.Scale; scale > 1 {
+	if scale := s.LotteryBaseInfo.Scale; scale > 1 {
 		str += fmt.Sprintf("x%d", scale)
 	}
 
-	if index := lott.LotteryBaseInfo.Index; index > 0 {
+	if index := s.LotteryBaseInfo.Index; index > 0 {
 		str += fmt.Sprintf(":%d", index)
 	}
 

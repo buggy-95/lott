@@ -518,21 +518,21 @@ func TestGetSingleLotteryResult(t *testing.T) {
 	}
 }
 
-func TestFormatSingleLottery(t *testing.T) {
+func TestSingleLotteryFormat(t *testing.T) {
 	tests := []struct {
-		name        string
-		onlyNumbers bool
-		input       string
-		result      string
+		name      string
+		showExtra bool
+		input     string
+		result    string
 	}{
-		{"无倍投无期号全展示", false, "DLT:01,02,03,04,05-01,02", "01,02,03,04,05-01,02"},
-		{"3倍投无期号全展示", false, "DLT:01,02,03,04,05-01,02x3", "01,02,03,04,05-01,02x3"},
-		{"无倍投有期号全展示", false, "DLT:01,02,03,04,05-01,02:25053", "01,02,03,04,05-01,02:25053"},
-		{"3倍投有期号全展示", false, "DLT:01,02,03,04,05-01,02:25053x3", "01,02,03,04,05-01,02x3:25053"},
-		{"无倍投无期号仅数字", true, "DLT:01,02,03,04,05-01,02", "01,02,03,04,05-01,02"},
-		{"3倍投无期号仅数字", true, "DLT:01,02,03,04,05-01,02x3", "01,02,03,04,05-01,02"},
-		{"无倍投有期号仅数字", true, "DLT:01,02,03,04,05-01,02:25053", "01,02,03,04,05-01,02"},
-		{"3倍投有期号仅数字", true, "DLT:01,02,03,04,05-01,02:25053x3", "01,02,03,04,05-01,02"},
+		{"无倍投无期号全展示", true, "DLT:01,02,03,04,05-01,02", "01,02,03,04,05-01,02"},
+		{"3倍投无期号全展示", true, "DLT:01,02,03,04,05-01,02x3", "01,02,03,04,05-01,02x3"},
+		{"无倍投有期号全展示", true, "DLT:01,02,03,04,05-01,02:25053", "01,02,03,04,05-01,02:25053"},
+		{"3倍投有期号全展示", true, "DLT:01,02,03,04,05-01,02:25053x3", "01,02,03,04,05-01,02x3:25053"},
+		{"无倍投无期号仅数字", false, "DLT:01,02,03,04,05-01,02", "01,02,03,04,05-01,02"},
+		{"3倍投无期号仅数字", false, "DLT:01,02,03,04,05-01,02x3", "01,02,03,04,05-01,02"},
+		{"无倍投有期号仅数字", false, "DLT:01,02,03,04,05-01,02:25053", "01,02,03,04,05-01,02"},
+		{"3倍投有期号仅数字", false, "DLT:01,02,03,04,05-01,02:25053x3", "01,02,03,04,05-01,02"},
 	}
 
 	for _, tt := range tests {
@@ -544,7 +544,7 @@ func TestFormatSingleLottery(t *testing.T) {
 				return
 			}
 
-			result := formatSingleLottery(complexLottery.List[0], tt.onlyNumbers)
+			result := complexLottery.List[0].format(tt.showExtra)
 
 			if result != tt.result {
 				t.Errorf("%s。期望: %s, 实际: %s, 输入: %s %+v", tt.name, tt.result, result, tt.input, complexLottery)
