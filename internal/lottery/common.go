@@ -625,36 +625,64 @@ func GetComplexLottery(input string) (ComplexLottery, error) {
 	}
 }
 
+// formatSingleLottery
+//
+// @Description 格式化单式彩票的号码区，格式为: 01,02,03,04-05,06
+//
+// @Param lott SingleLottery 单式彩票结构体
+//
+// @Param onlyNumber bool 是否只返回号码区
+//
+// @Return string 格式化后的号码区字符串
+func formatSingleLottery(lott SingleLottery, onlyNumber bool) string {
+	var (
+		front string
+		back  string
+		str   string
+	)
+
+	for _, num := range lott.Front {
+		front += fmt.Sprintf(",%02d", num)
+	}
+
+	str += front[1:]
+
+	for _, num := range lott.Back {
+		back += fmt.Sprintf(",%02d", num)
+	}
+
+	str += "-" + back[1:]
+
+	if onlyNumber {
+		return str
+	}
+
+	if scale := lott.LotteryBaseInfo.Scale; scale > 1 {
+		str += fmt.Sprintf("x%d", scale)
+	}
+
+	if index := lott.LotteryBaseInfo.Index; index > 0 {
+		str += fmt.Sprintf(":%d", index)
+	}
+
+	return str
+}
+
 // untested
-func GetComplexResult(source, target string) (ComplexLotteryResult, error) {
+func GetComplexResult(source, target ComplexLottery) (ComplexLotteryResult, error) {
 	var (
 		result ComplexLotteryResult
 		list   []SingleLottery
 	)
 
-	complexTarget, complexTargetErr := GetComplexLottery(target)
-
-	if complexTargetErr != nil {
-		return result, complexTargetErr
+	if !(len(target.List) == 1) {
+		return result, fmt.Errorf("开奖号码应该是单式，输入: %+v", target)
 	}
 
-	if !(len(complexTarget.List) == 1 &&
-		len(complexTarget.FrontDan) == 0 &&
-		len(complexTarget.FrontTuo) == 5 &&
-		len(complexTarget.BackDan) == 0 &&
-		len(complexTarget.BackTuo) == 2) {
-		return result, fmt.Errorf("开奖号码应该是单式，输入: %s", target)
-	}
+	singleTarget := target.List[0]
 
-	singleTarget := complexTarget.List[0]
-	complexSource, complexSourceErr := parseComplexLotteryParts(source)
-
-	if complexSourceErr != nil {
-		return result, complexSourceErr
-	}
-
-	result.LotteryBaseInfo = complexSource.LotteryBaseInfo
-	list = genSingleLotteryList(complexSource)
+	result.LotteryBaseInfo = source.LotteryBaseInfo
+	list = genSingleLotteryList(source.ComplexLotteryParts)
 
 	for _, singleSource := range list {
 		singleResult := getSingleLotteryResult(singleSource, singleTarget)
