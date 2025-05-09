@@ -7,6 +7,13 @@ import (
 	"github.com/buggy-95/lott/internal/lottery"
 )
 
+// check
+//
+// @Description 检查复式彩票的前区和后区是否符合要求
+//
+// @Param lott ComplexLotteryParts 复杂彩票结构体
+//
+// @Return error 错误信息
 func check(lott lottery.ComplexLotteryParts) error {
 	if len(lott.FrontDan) >= 5 {
 		return fmt.Errorf("前区胆码数量应该小于5，当前数量: %d", len(lott.FrontDan))
@@ -48,4 +55,19 @@ func check(lott lottery.ComplexLotteryParts) error {
 	}
 
 	return nil
+}
+
+// isSingleComplexLottery
+//
+// @Description 判断复式票是否是单式
+//
+// @Param parts ComplexLottery 复杂彩票结构体
+//
+// @Return bool 是否是单式
+func isSingleComplexLottery(parts lottery.ComplexLottery) bool {
+	return len(parts.List) == 1 &&
+		len(parts.FrontDan) == 0 &&
+		len(parts.FrontTuo) == 5 &&
+		len(parts.BackDan) == 0 &&
+		len(parts.BackTuo) == 2
 }

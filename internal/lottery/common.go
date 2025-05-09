@@ -602,7 +602,7 @@ func getSingleLotteryResult(source SingleLottery, target SingleLottery) SingleLo
 	return result
 }
 
-// getComplexLottery
+// GetComplexLottery
 //
 // @Description 获取复杂彩票的结构体，无需测试，都是测试过的方法直接组合的
 //
@@ -611,7 +611,7 @@ func getSingleLotteryResult(source SingleLottery, target SingleLottery) SingleLo
 // @Return ComplexLottery 复杂彩票结构体
 //
 // @Return error 错误信息
-func getComplexLottery(input string) (ComplexLottery, error) {
+func GetComplexLottery(input string) (ComplexLottery, error) {
 	var (
 		result ComplexLottery
 	)
@@ -632,7 +632,7 @@ func GetComplexResult(source, target string) (ComplexLotteryResult, error) {
 		list   []SingleLottery
 	)
 
-	complexTarget, complexTargetErr := getComplexLottery(target)
+	complexTarget, complexTargetErr := GetComplexLottery(target)
 
 	if complexTargetErr != nil {
 		return result, complexTargetErr

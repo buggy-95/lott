@@ -56,3 +56,34 @@ func TestCheck(t *testing.T) {
 		})
 	}
 }
+
+func TestIsSingleComplexLottery(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  string
+		result bool
+	}{
+		{"单式", "01,02,03,04,05-01,02", true},
+		{"前单后复", "01,02,03,04,05-01,02,03", false},
+		{"前单后拖", "01,02,03,04,05-01~02,03", false},
+		{"前复后单", "01,02,03,04,05,06-01,02", false},
+		{"复式", "01,02,03,04,05,06-01,02,03", false},
+		{"前复后拖", "01,02,03,04,05,06-01~02,03", false},
+		{"前拖后单", "01,02,03~04,05,06-01,02", false},
+		{"前拖后复", "01,02,03~04,05,06-01,02,03", false},
+		{"前拖后拖", "01,02,03~04,05,06-01~02,03", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			complexLottery, err := lottery.GetComplexLottery("DLT:" + tt.input)
+
+			if err != nil {
+				t.Errorf("解析失败，错误信息: %s", err)
+				return
+			} else if result := isSingleComplexLottery(complexLottery); result != tt.result {
+				t.Errorf("期望: %v, 实际: %v, 输入: %s", tt.result, result, tt.input)
+			}
+		})
+	}
+}
