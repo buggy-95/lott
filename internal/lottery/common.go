@@ -7,6 +7,13 @@ import (
 	"strconv"
 )
 
+// GetDupNums
+//
+// @Description 获取重复的号码
+//
+// @Param nums []int 数字列表
+//
+// @Return []int 重复的号码列表
 func GetDupNums(nums []int) []int {
 	var dupSlice []int
 
@@ -25,6 +32,15 @@ func GetDupNums(nums []int) []int {
 	return dupSlice
 }
 
+// GetCrossNums
+//
+// @Description 获取两个数字列表的交集
+//
+// @Param source []int 数字列表1
+//
+// @Param target []int 数字列表2
+//
+// @Return []int 交集列表
 func GetCrossNums(source, target []int) []int {
 	var result []int
 
@@ -46,6 +62,18 @@ func GetCrossNums(source, target []int) []int {
 }
 
 // 将号码区解析为前区和后区
+
+// parseNumParts
+//
+// @Description 将数字区解析为胆码区和拖码区，通过波浪号将数字区进行分隔，若无波浪号则认为整个数字区都是拖码区。
+//
+// @Param input string 输入的号码区字符串，格式为: 01,02～03,04 或 01,02,03
+//
+// @Return []int 胆码区的数字列表
+//
+// @Return []int 拖码区的数字列表
+//
+// @Return error 错误信息
 func parseNumParts(input string) ([]int, []int, error) {
 	var (
 		dan []int  // 胆码
@@ -173,8 +201,16 @@ func parseNumParts(input string) ([]int, []int, error) {
 	return dan, tuo, nil
 }
 
-// DLT:01,02,03,04~05,06-07~08x3:25053
-func ParseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
+// parseComplexLotteryParts
+//
+// @Description 解析复杂彩票的字符串，格式为: 彩票类型: 前区号码-后区号码[x倍投][:期号]
+//
+// @Param input string 输入的复杂彩票字符串，例如：DLT:01,02,03,04~05,06-07~08x3:25053
+//
+// @Return ComplexLotteryParts 解析后的复杂彩票结构体
+//
+// @Return error 错误信息
+func parseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 	nextTokenType := "type" // type -> front -> back -> scale | index -> index | scale
 	complexLotteryParts := ComplexLotteryParts{}
 	complexLotteryParts.Scale = 1
@@ -354,6 +390,15 @@ func ParseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 	return complexLotteryParts, nil
 }
 
+// genPermutation
+//
+// @Description 从列表中生成长度为n的所有组合，按照从小到大的顺序排列
+//
+// @Param nums []int 数字列表
+//
+// @Param n int 组合的长度
+//
+// @Return [][]int 组合列表
 func genPermutation(nums []int, n int) [][]int {
 	var (
 		result    [][]int
@@ -385,6 +430,13 @@ func genPermutation(nums []int, n int) [][]int {
 	return result
 }
 
+// genSingleLotteryList
+//
+// @Description 生成单式彩票列表
+//
+// @Param parts ComplexLotteryParts 复杂彩票结构体
+//
+// @Return []SingleLottery 单式彩票列表
 func genSingleLotteryList(parts ComplexLotteryParts) []SingleLottery {
 	var (
 		result []SingleLottery
@@ -420,6 +472,17 @@ func genSingleLotteryList(parts ComplexLotteryParts) []SingleLottery {
 	return result
 }
 
+// getMatchNums
+//
+// @Description 获取两个数字列表的交集，返回标记是否命中的source号码列表和命中数量
+//
+// @Param source []int source数字列表
+//
+// @Param target []int target数字列表
+//
+// @Return []BingoNum 命中号码列表
+//
+// @Return int 命中数量
 func getMatchNums(source []int, target []int) ([]BingoNum, int) {
 	var (
 		result  []BingoNum
@@ -443,6 +506,15 @@ func getMatchNums(source []int, target []int) ([]BingoNum, int) {
 	return result, matched
 }
 
+// getSingleLotteryResult
+//
+// @Description 获取单式彩票的开奖结果
+//
+// @Param source SingleLottery 购奖单式彩票
+//
+// @Param target SingleLottery 开奖单式彩票
+//
+// @Return SingleLotteryResult 购奖单式彩票的开奖结果
 func getSingleLotteryResult(source SingleLottery, target SingleLottery) SingleLotteryResult {
 	var (
 		result SingleLotteryResult
@@ -530,13 +602,21 @@ func getSingleLotteryResult(source SingleLottery, target SingleLottery) SingleLo
 	return result
 }
 
-// untested
+// getComplexLottery
+//
+// @Description 获取复杂彩票的结构体，无需测试，都是测试过的方法直接组合的
+//
+// @Param input string 输入的复杂彩票字符串，例如：DLT:01,02,03,04~05,06-07~08x3:25053
+//
+// @Return ComplexLottery 复杂彩票结构体
+//
+// @Return error 错误信息
 func getComplexLottery(input string) (ComplexLottery, error) {
 	var (
 		result ComplexLottery
 	)
 
-	complexParts, err := ParseComplexLotteryParts(input)
+	complexParts, err := parseComplexLotteryParts(input)
 
 	if err != nil {
 		return result, err
@@ -567,7 +647,7 @@ func GetComplexResult(source, target string) (ComplexLotteryResult, error) {
 	}
 
 	singleTarget := complexTarget.List[0]
-	complexSource, complexSourceErr := ParseComplexLotteryParts(source)
+	complexSource, complexSourceErr := parseComplexLotteryParts(source)
 
 	if complexSourceErr != nil {
 		return result, complexSourceErr

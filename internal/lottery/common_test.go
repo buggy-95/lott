@@ -92,7 +92,7 @@ func TestParseComplexLotteryParts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lottery, err := ParseComplexLotteryParts(tt.input)
+			lottery, err := parseComplexLotteryParts(tt.input)
 
 			if len(tt.errorMsg) == 0 {
 				if err != nil {
@@ -284,7 +284,7 @@ func TestGenSingleLotteryList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			complexLottery, err := ParseComplexLotteryParts("DLT:" + tt.input)
+			complexLottery, err := parseComplexLotteryParts("DLT:" + tt.input)
 
 			if err != nil {
 				t.Errorf("%s: 解析失败。错误信息: %s, 输入: %s", tt.name, err, tt.input)
@@ -503,10 +503,10 @@ func TestGetSingleLotteryResult(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			complexSource, _ := ParseComplexLotteryParts("DLT:" + tt.source)
+			complexSource, _ := parseComplexLotteryParts("DLT:" + tt.source)
 			sourceList := genSingleLotteryList(complexSource)
 			source := sourceList[0]
-			complexTarget, _ := ParseComplexLotteryParts("DLT:" + tt.target)
+			complexTarget, _ := parseComplexLotteryParts("DLT:" + tt.target)
 			targetList := genSingleLotteryList(complexTarget)
 			target := targetList[0]
 			result := getSingleLotteryResult(source, target)
