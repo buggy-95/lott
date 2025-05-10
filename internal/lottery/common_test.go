@@ -663,7 +663,7 @@ func TestLotteryFormat(t *testing.T) {
 				return
 			}
 
-			result := lott.format(tt.showExtra)
+			result := lott.Format(tt.showExtra)
 
 			if result != tt.result {
 				t.Errorf("%s。期望: %s, 实际: %s, 输入: %s %+v", tt.name, tt.result, result, tt.input, lott)

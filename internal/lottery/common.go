@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+
+	"github.com/fatih/color"
 )
 
 // GetDupNums
@@ -540,7 +542,7 @@ func (source *Lottery) GetLotteryResult(target Lottery) (LotteryResult, error) {
 	)
 
 	if !target.IsSingleLottery() {
-		return result, fmt.Errorf("开奖彩票不是单式票: %s", target.format(true))
+		return result, fmt.Errorf("开奖彩票不是单式票: %s", target.Format(true))
 	}
 
 	result.LotteryBaseInfo = source.LotteryBaseInfo
@@ -709,14 +711,14 @@ func GetLottery(input string) (Lottery, error) {
 	}
 }
 
-// format
+// Format
 //
 // @Description 格式化彩票的号码区，例如: 01,02,03,04-05,06
 //
 // @Param showExtra bool 是否展示除了号码区以外的额外信息，例如倍投倍数和期号
 //
-// @Return string 格式化后的号码区字符串
-func (lott *Lottery) format(showExtra bool) string {
+// @Return string 格式化后的字符串
+func (lott *Lottery) Format(showExtra bool) string {
 	var (
 		front string
 		back  string
@@ -782,4 +784,115 @@ func (lott *Lottery) format(showExtra bool) string {
 	}
 
 	return str
+}
+
+// Format
+//
+// @Description 格式化彩票结果
+//
+// @Param useColor bool 是否用颜色标记中奖号码
+//
+// @Param showExtra bool 是否展示除了号码区以外的额外信息，例如倍投倍数和期号
+//
+// @Return string 格式化后的字符串
+func (result *LotteryResult) Format(useColor, showExtra bool) string {
+	var (
+		str string
+	)
+
+	color.NoColor = !useColor
+
+	for i, item := range result.Numbers {
+		num := fmt.Sprintf("%02d", item.Num)
+
+		if item.Bingo {
+			if item.Type == "FrontDan" || item.Type == "FrontTuo" {
+				red := color.New(color.BgRed).SprintFunc()
+				num = red(num)
+			}
+
+			if item.Type == "BackDan" || item.Type == "BackTuo" {
+				blue := color.New(color.BgBlue).SprintFunc()
+				num = blue(num)
+			}
+		}
+
+		if i > 0 {
+			if pre := result.Numbers[i-1]; item.Type != pre.Type {
+				switch item.Type {
+				case "FrontTuo":
+					num = "~" + num
+				case "BackDan":
+					num = "-" + num
+				case "BackTuo":
+					switch pre.Type {
+					case "FrontTuo":
+						num = "-" + num
+					case "BackDan":
+						num = "~" + num
+					}
+				}
+			} else {
+				num = "," + num
+			}
+		}
+
+		str += num
+	}
+
+	if showExtra {
+		baseInfo := result.LotteryBaseInfo
+
+		if baseInfo.Scale > 1 {
+			str += fmt.Sprintf("x%d", baseInfo.Scale)
+		}
+
+		if baseInfo.Index > 0 {
+			str += fmt.Sprintf(":%d", baseInfo.Index)
+		}
+	}
+
+	return str
+}
+
+func getLevelLabel(level int) string {
+	resultMap := map[int]string{
+		1: "一等奖",
+		2: "二等奖",
+		3: "三等奖",
+		4: "四等奖",
+		5: "五等奖",
+		6: "六等奖",
+		7: "七等奖",
+		8: "八等奖",
+		9: "九等奖",
+	}
+
+	label := resultMap[level]
+
+	if len(label) > 0 {
+		return label
+	} else {
+		return "无"
+	}
+}
+
+func (result *LotteryResult) PrintResult(useColor, showExtra bool) {
+	str := result.Format(useColor, showExtra)
+
+	if len(result.List) > 1 {
+		str += fmt.Sprintf("\t最高奖: %s", getLevelLabel(result.Level))
+		str += fmt.Sprintf("\t合计奖金: %d", result.Price)
+	} else {
+		str += fmt.Sprintf("\t%s", getLevelLabel(result.Level))
+		str += fmt.Sprintf("\t奖金: %d", result.Price)
+	}
+
+	fmt.Println(str)
+}
+
+func (result *LotteryResult) PrintList(useColor, showExtra bool) {
+	for _, res := range result.List {
+		res.PrintResult(useColor, showExtra)
+	}
 }
