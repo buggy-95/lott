@@ -14,7 +14,7 @@ import (
 // @Param lott ComplexLotteryParts 复杂彩票结构体
 //
 // @Return error 错误信息
-func check(lott lottery.ComplexLotteryParts) error {
+func check(lott lottery.LotteryParts) error {
 	if len(lott.FrontDan) >= 5 {
 		return fmt.Errorf("前区胆码数量应该小于5，当前数量: %d", len(lott.FrontDan))
 	} else if len(lott.BackDan) >= 2 {
@@ -55,19 +55,4 @@ func check(lott lottery.ComplexLotteryParts) error {
 	}
 
 	return nil
-}
-
-// isSingleComplexLottery
-//
-// @Description 判断复式票是否是单式
-//
-// @Param parts ComplexLottery 复杂彩票结构体
-//
-// @Return bool 是否是单式
-func isSingleComplexLottery(parts lottery.ComplexLottery) bool {
-	return len(parts.List) == 1 &&
-		len(parts.FrontDan) == 0 &&
-		len(parts.FrontTuo) == 5 &&
-		len(parts.BackDan) == 0 &&
-		len(parts.BackTuo) == 2
 }

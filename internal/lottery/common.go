@@ -201,7 +201,7 @@ func parseNumParts(input string) ([]int, []int, error) {
 	return dan, tuo, nil
 }
 
-// parseComplexLotteryParts
+// parseLotteryParts
 //
 // @Description 解析复杂彩票的字符串，格式为: 彩票类型: 前区号码-后区号码[x倍投][:期号]
 //
@@ -210,10 +210,10 @@ func parseNumParts(input string) ([]int, []int, error) {
 // @Return ComplexLotteryParts 解析后的复杂彩票结构体
 //
 // @Return error 错误信息
-func parseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
+func parseLotteryParts(input string) (LotteryParts, error) {
 	nextTokenType := "type" // type -> front -> back -> scale | index -> index | scale
-	complexLotteryParts := ComplexLotteryParts{}
-	complexLotteryParts.Scale = 1
+	lotteryParts := LotteryParts{}
+	lotteryParts.Scale = 1
 
 	var (
 		token       string
@@ -263,7 +263,7 @@ func parseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 		switch tokenType {
 		case "type":
 			if tmpToken == "SSQ" || tmpToken == "DLT" {
-				complexLotteryParts.Type = tmpToken
+				lotteryParts.Type = tmpToken
 			} else {
 				return fmt.Errorf("彩票类型解析失败。不支持的彩票类型: %s。输入: %s", tmpToken, input)
 			}
@@ -273,8 +273,8 @@ func parseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 			if err != nil {
 				return fmt.Errorf("前区号码解析失败。原因: %s。输入: %s", err, input)
 			} else {
-				complexLotteryParts.FrontDan = dan
-				complexLotteryParts.FrontTuo = tuo
+				lotteryParts.FrontDan = dan
+				lotteryParts.FrontTuo = tuo
 			}
 		case "back":
 			dan, tuo, err := parseNumParts(tmpToken)
@@ -282,8 +282,8 @@ func parseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 			if err != nil {
 				return fmt.Errorf("后区号码解析失败。原因: %s。输入: %s", err, input)
 			} else {
-				complexLotteryParts.BackDan = dan
-				complexLotteryParts.BackTuo = tuo
+				lotteryParts.BackDan = dan
+				lotteryParts.BackTuo = tuo
 			}
 		case "scale":
 			scale, err := strconv.Atoi(tmpToken)
@@ -291,7 +291,7 @@ func parseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 			if err != nil {
 				return fmt.Errorf("倍投倍数解析失败。倍数: %s。输入: %s", tmpToken, input)
 			} else {
-				complexLotteryParts.Scale = scale
+				lotteryParts.Scale = scale
 				scaleParsed = true
 			}
 		case "index":
@@ -300,7 +300,7 @@ func parseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 			if err != nil {
 				return fmt.Errorf("期号解析失败。期号: %s。输入: %s", tmpToken, input)
 			} else {
-				complexLotteryParts.Index = index
+				lotteryParts.Index = index
 				indexParsed = true
 			}
 		}
@@ -379,15 +379,15 @@ func parseComplexLotteryParts(input string) (ComplexLotteryParts, error) {
 
 	for _, char := range input {
 		if err := dealChar(char); err != nil {
-			return ComplexLotteryParts{}, err
+			return LotteryParts{}, err
 		}
 	}
 
 	if err := dealToken(nextTokenType); err != nil {
-		return ComplexLotteryParts{}, err
+		return LotteryParts{}, err
 	}
 
-	return complexLotteryParts, nil
+	return lotteryParts, nil
 }
 
 // genPermutation
@@ -430,42 +430,50 @@ func genPermutation(nums []int, n int) [][]int {
 	return result
 }
 
-// genSingleLotteryList
+// genLotteryList
 //
 // @Description 生成单式彩票列表
 //
-// @Param parts ComplexLotteryParts 复杂彩票结构体
-//
 // @Return []SingleLottery 单式彩票列表
-func genSingleLotteryList(parts ComplexLotteryParts) []SingleLottery {
+func (parts *LotteryParts) genLotteryList() []Lottery {
 	var (
-		result []SingleLottery
+		result    []Lottery
+		frontList [][]int
+		backList  [][]int
 	)
 
+	baseInfo := parts.LotteryBaseInfo
 	frontDan := parts.FrontDan
 	frontTuo := parts.FrontTuo
 	backDan := parts.BackDan
 	backTuo := parts.BackTuo
 
-	frontList := genPermutation(frontTuo, 5-len(frontDan))
-	backList := genPermutation(backTuo, 2-len(backDan))
+	// TODO: 考虑这里的逻辑是否可以拆到外面去
+	switch baseInfo.Type {
+	case "DLT":
+		frontList = genPermutation(frontTuo, 5-len(frontDan))
+		backList = genPermutation(backTuo, 2-len(backDan))
+	case "SSQ":
+		frontList = genPermutation(frontTuo, 6-len(frontDan))
+		backList = genPermutation(backTuo, 1-len(backDan))
+	}
 
 	for _, front := range frontList {
 		for _, back := range backList {
-			singleLottery := SingleLottery{
-				LotteryBaseInfo: LotteryBaseInfo{
-					Type:  parts.Type,
-					Index: parts.Index,
-					Scale: parts.Scale,
+			lott := Lottery{
+				LotteryParts: LotteryParts{
+					LotteryBaseInfo: baseInfo,
+					FrontTuo:        append(frontDan, front...),
+					BackTuo:         append(backDan, back...),
+					FrontDan:        nil,
+					BackDan:         nil,
 				},
-				Front: append(frontDan, front...),
-				Back:  append(backDan, back...),
 			}
 
-			sort.Ints(singleLottery.Front)
-			sort.Ints(singleLottery.Back)
+			sort.Ints(lott.FrontTuo)
+			sort.Ints(lott.BackTuo)
 
-			result = append(result, singleLottery)
+			result = append(result, lott)
 		}
 	}
 
@@ -506,186 +514,272 @@ func getMatchNums(source []int, target []int) ([]BingoNum, int) {
 	return result, matched
 }
 
-// getSingleLotteryResult
+// isSingleLottery
 //
-// @Description 获取单式彩票的开奖结果
+// @Description 判断当前彩票是否是单式票
 //
-// @Param source SingleLottery 购奖单式彩票
+// @Return bool 当前彩票是否是单式票
+func (lott *Lottery) IsSingleLottery() bool {
+	return len(lott.List) == 0
+}
+
+// getLotteryResult
 //
-// @Param target SingleLottery 开奖单式彩票
+// @Description 获取彩票的开奖结果
 //
-// @Return SingleLotteryResult 购奖单式彩票的开奖结果
-func getSingleLotteryResult(source SingleLottery, target SingleLottery) SingleLotteryResult {
+// @Param target Lottery 开奖彩票，必须要是单式票
+//
+// @Return LotteryResult 购奖彩票的开奖结果
+//
+// @Return error 错误信息
+func (source *Lottery) GetLotteryResult(target Lottery) (LotteryResult, error) {
 	var (
-		result SingleLotteryResult
+		result LotteryResult
 		nums   []ResultNum
 		level  int
 	)
 
-	frontNums, frontMatched := getMatchNums(source.Front, target.Front)
-	backNums, backMatched := getMatchNums(source.Back, target.Back)
-
-	for _, num := range frontNums {
-		nums = append(nums, ResultNum{Type: "FrontTuo", BingoNum: num})
-	}
-
-	for _, num := range backNums {
-		nums = append(nums, ResultNum{Type: "BackTuo", BingoNum: num})
-	}
-
-	levelPriceMap := map[int]int{
-		1: 10000000,
-		2: 200000,
-		3: 10000,
-		4: 3000,
-		5: 300,
-		6: 200,
-		7: 100,
-		8: 15,
-		9: 5,
-	}
-
-	switch frontMatched {
-	case 5:
-		switch backMatched {
-		case 2:
-			level = 1
-		case 1:
-			level = 2
-		case 0:
-			level = 3
-		}
-	case 4:
-		switch backMatched {
-		case 2:
-			level = 4
-		case 1:
-			level = 5
-		case 0:
-			level = 7
-		}
-	case 3:
-		switch backMatched {
-		case 2:
-			level = 6
-		case 1:
-			level = 8
-		case 0:
-			level = 9
-		}
-	case 2:
-		switch backMatched {
-		case 2:
-			level = 8
-		case 1:
-			level = 9
-		}
-	case 1:
-		switch backMatched {
-		case 2:
-			level = 9
-		}
-	case 0:
-		switch backMatched {
-		case 2:
-			level = 9
-		}
+	if !target.IsSingleLottery() {
+		return result, fmt.Errorf("开奖彩票不是单式票: %s", target.format(true))
 	}
 
 	result.LotteryBaseInfo = source.LotteryBaseInfo
-	result.FrontMatched = frontMatched
-	result.BackMatched = backMatched
-	result.Numbers = nums
-	result.Level = level
-	result.Price = levelPriceMap[level] * source.Scale
 
-	return result
+	// 处理单式票结果
+	if source.IsSingleLottery() {
+		frontNums, frontMatched := getMatchNums(source.FrontTuo, target.FrontTuo)
+		backNums, backMatched := getMatchNums(source.BackTuo, target.BackTuo)
+
+		for _, num := range frontNums {
+			nums = append(nums, ResultNum{Type: "FrontTuo", BingoNum: num})
+		}
+
+		for _, num := range backNums {
+			nums = append(nums, ResultNum{Type: "BackTuo", BingoNum: num})
+		}
+
+		switch frontMatched {
+		case 5:
+			switch backMatched {
+			case 2:
+				level = 1
+			case 1:
+				level = 2
+			case 0:
+				level = 3
+			}
+		case 4:
+			switch backMatched {
+			case 2:
+				level = 4
+			case 1:
+				level = 5
+			case 0:
+				level = 7
+			}
+		case 3:
+			switch backMatched {
+			case 2:
+				level = 6
+			case 1:
+				level = 8
+			case 0:
+				level = 9
+			}
+		case 2:
+			switch backMatched {
+			case 2:
+				level = 8
+			case 1:
+				level = 9
+			}
+		case 1:
+			switch backMatched {
+			case 2:
+				level = 9
+			}
+		case 0:
+			switch backMatched {
+			case 2:
+				level = 9
+			}
+		}
+
+		levelPriceMap := map[int]int{
+			1: 10000000,
+			2: 200000,
+			3: 10000,
+			4: 3000,
+			5: 300,
+			6: 200,
+			7: 100,
+			8: 15,
+			9: 5,
+		}
+
+		result.LotteryBaseInfo = source.LotteryBaseInfo
+		result.FrontMatched = frontMatched
+		result.BackMatched = backMatched
+		result.Numbers = nums
+		result.Level = level
+		result.Price = levelPriceMap[level] * source.Scale
+
+		return result, nil
+	}
+
+	// 复式票递归处理
+	frontDanNums, frontDanMatched := getMatchNums(source.FrontDan, target.FrontTuo)
+	frontTuoNums, frontTuoMatched := getMatchNums(source.FrontTuo, target.FrontTuo)
+	backDanNums, backDanMatched := getMatchNums(source.BackDan, target.BackTuo)
+	backTuoNums, backTuoMatched := getMatchNums(source.BackTuo, target.BackTuo)
+
+	result.FrontMatched = frontDanMatched + frontTuoMatched
+	result.BackMatched = backDanMatched + backTuoMatched
+
+	for _, num := range frontDanNums {
+		nums = append(nums, ResultNum{Type: "FrontDan", BingoNum: num})
+	}
+
+	for _, num := range frontTuoNums {
+		nums = append(nums, ResultNum{Type: "FrontTuo", BingoNum: num})
+	}
+
+	for _, num := range backDanNums {
+		nums = append(nums, ResultNum{Type: "BackDan", BingoNum: num})
+	}
+
+	for _, num := range backTuoNums {
+		nums = append(nums, ResultNum{Type: "BackTuo", BingoNum: num})
+	}
+
+	result.Numbers = nums
+	result.Level = 100
+
+	for _, lott := range source.List {
+		lottResult, err := lott.GetLotteryResult(target)
+
+		if err != nil {
+			fmt.Println(err)
+			return result, err
+		}
+
+		result.List = append(result.List, lottResult)
+		result.Price += lottResult.Price
+
+		if lottResult.Level > 0 {
+			result.Level = min(result.Level, lottResult.Level)
+		}
+	}
+
+	if result.Level == 100 {
+		result.Level = 0
+	}
+
+	return result, nil
 }
 
-// GetComplexLottery
+// GetLottery
 //
-// @Description 获取复杂彩票的结构体，无需测试，都是测试过的方法直接组合的
+// @Description 获取复杂彩票的结构体
 //
 // @Param input string 输入的复杂彩票字符串，例如：DLT:01,02,03,04~05,06-07~08x3:25053
 //
-// @Return ComplexLottery 复杂彩票结构体
+// @Return Lottery 复杂彩票结构体
 //
 // @Return error 错误信息
-func GetComplexLottery(input string) (ComplexLottery, error) {
+func GetLottery(input string) (Lottery, error) {
 	var (
-		result ComplexLottery
+		result Lottery
 	)
 
-	complexParts, err := parseComplexLotteryParts(input)
+	parts, err := parseLotteryParts(input)
 
 	if err != nil {
 		return result, err
+	}
+
+	list := parts.genLotteryList()
+
+	if len(list) > 1 {
+		return Lottery{parts, list}, nil
+	} else if len(list) == 1 {
+		return Lottery{parts, nil}, nil
 	} else {
-		return ComplexLottery{complexParts, genSingleLotteryList(complexParts)}, nil
+		return result, fmt.Errorf("单式票生成失败，输入: %s", input)
 	}
 }
 
 // format
 //
-// @Description 格式化单式彩票的号码区，格式为: 01,02,03,04-05,06
+// @Description 格式化彩票的号码区，例如: 01,02,03,04-05,06
 //
 // @Param showExtra bool 是否展示除了号码区以外的额外信息，例如倍投倍数和期号
 //
 // @Return string 格式化后的号码区字符串
-func (s *SingleLottery) format(showExtra bool) string {
+func (lott *Lottery) format(showExtra bool) string {
 	var (
 		front string
 		back  string
 		str   string
 	)
 
-	for _, num := range s.Front {
+	// 前区胆码
+	for _, num := range lott.FrontDan {
 		front += fmt.Sprintf(",%02d", num)
 	}
 
-	str += front[1:]
+	if len(front) > 0 {
+		str += front[1:]
+		front = ""
+	}
 
-	for _, num := range s.Back {
+	// 前区拖码
+	for _, num := range lott.FrontTuo {
+		front += fmt.Sprintf(",%02d", num)
+	}
+
+	if len(front) > 0 {
+		if len(lott.FrontDan) > 0 {
+			str += "~"
+		}
+
+		str += front[1:] + "-"
+	}
+
+	// 后区胆码
+	for _, num := range lott.BackDan {
 		back += fmt.Sprintf(",%02d", num)
 	}
 
-	str += "-" + back[1:]
+	if len(back) > 0 {
+		str += back[1:]
+		back = ""
+	}
+
+	// 后区拖码
+	for _, num := range lott.BackTuo {
+		back += fmt.Sprintf(",%02d", num)
+	}
+
+	if len(back) > 0 {
+		if len(lott.BackDan) > 0 {
+			str += "~"
+		}
+
+		str += back[1:]
+	}
 
 	if !showExtra {
 		return str
 	}
 
-	if scale := s.LotteryBaseInfo.Scale; scale > 1 {
+	if scale := lott.LotteryBaseInfo.Scale; scale > 1 {
 		str += fmt.Sprintf("x%d", scale)
 	}
 
-	if index := s.LotteryBaseInfo.Index; index > 0 {
+	if index := lott.LotteryBaseInfo.Index; index > 0 {
 		str += fmt.Sprintf(":%d", index)
 	}
 
 	return str
-}
-
-// untested
-func GetComplexResult(source, target ComplexLottery) (ComplexLotteryResult, error) {
-	var (
-		result ComplexLotteryResult
-		list   []SingleLottery
-	)
-
-	if !(len(target.List) == 1) {
-		return result, fmt.Errorf("开奖号码应该是单式，输入: %+v", target)
-	}
-
-	singleTarget := target.List[0]
-
-	result.LotteryBaseInfo = source.LotteryBaseInfo
-	list = genSingleLotteryList(source.ComplexLotteryParts)
-
-	for _, singleSource := range list {
-		singleResult := getSingleLotteryResult(singleSource, singleTarget)
-		result.List = append(result.List, singleResult)
-	}
-
-	return result, nil
 }

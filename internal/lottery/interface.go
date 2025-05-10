@@ -21,15 +21,8 @@ type LotteryBaseInfo struct {
 	Scale int    // 倍投倍数
 }
 
-// 单式彩票
-type SingleLottery struct {
-	LotteryBaseInfo
-	Front []int // 前区号码
-	Back  []int // 后区号码
-}
-
-// 复试彩票结构
-type ComplexLotteryParts struct {
+// 彩票构成部分
+type LotteryParts struct {
 	LotteryBaseInfo
 	FrontDan []int // 前区胆码
 	FrontTuo []int // 前区拖码
@@ -37,28 +30,23 @@ type ComplexLotteryParts struct {
 	BackTuo  []int // 后区拖码
 }
 
-// 复式彩票，包含复式彩票结构和单式彩票列表
+// 彩票结构，包含组成部分和列表，若列表为空则当前彩票为单式票，复式票的列表会包含所有组成的单式票
+type Lottery struct {
+	LotteryParts
+	List []Lottery // 单式列表，若为空则当前彩票为单式，否则为复式
+}
+
+// 彩票开奖结果
 //
-// 单式彩票列表由复式彩票的胆拖组合而成
-type ComplexLottery struct {
-	ComplexLotteryParts
-	List []SingleLottery // 单式列表
-}
-
-// 单式彩票开奖结果
-type SingleLotteryResult struct {
-	LotteryBaseInfo
-	FrontMatched int
-	BackMatched  int
-	Level        int
-	Price        int
-	Numbers      []ResultNum
-}
-
-// 复式彩票开奖结果，包含单式彩票开奖结果列表
-type ComplexLotteryResult struct {
-	LotteryBaseInfo
-	Price   int
-	Numbers []ResultNum
-	List    []SingleLotteryResult
+// 若为单式票，列表为空
+//
+// 若为复试票，Level为单式票列表中最高中奖等级
+type LotteryResult struct {
+	LotteryBaseInfo // TODO: 改成指针
+	FrontMatched    int
+	BackMatched     int
+	Level           int
+	Price           int
+	Numbers         []ResultNum
+	List            []LotteryResult
 }
