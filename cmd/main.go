@@ -2,16 +2,17 @@ package main
 
 import (
 	"github.com/buggy-95/lott/internal/lottery"
+	"github.com/buggy-95/lott/internal/lottery/dlt"
 )
 
 func main() {
-	targetLottery := "DLT:15,18,20,21,34-04,10"
+	targetLottery := "DLT:02,04,11,29,30-02,08"
 	sourceLotteryList := []string{
-		"DLT:11,14,15,31,35-01,11x3",
-		"DLT:02,08,09,15,30-05,08x3",
-		"DLT:13,15,16,20,22-10,12x3",
-		"DLT:09,15,22,23,31-07,08x3",
-		"DLT:05,16,19,31,34-04,10x3",
+		"DLT:16,18,29,30,31-09,12x3",
+		"DLT:01,12,22,30,33-07,10x3",
+		"DLT:06,10,21,22,31-07,09x3",
+		"DLT:07,10,15,31,33-10,12x3",
+		"DLT:08,14,17,27,31-01,07x3",
 	}
 
 	target, _ := lottery.GetLottery(targetLottery)
@@ -23,4 +24,6 @@ func main() {
 		result.PrintResult(true, true)
 		result.PrintList(true, true)
 	}
+
+	dlt.CheckStore()
 }
